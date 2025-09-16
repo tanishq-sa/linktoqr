@@ -14,7 +14,7 @@ A modern, responsive Next.js application for generating and downloading QR codes
 
 ## 🚀 Live Demo
 
-[View Live Demo on Vercel](https://your-app-name.vercel.app)
+[View Live Demo on Vercel](https://linktoqr.vercel.app)
 
 ## 🛠️ Tech Stack
 
@@ -28,7 +28,7 @@ A modern, responsive Next.js application for generating and downloading QR codes
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/linktoqrwebsite.git
+   git clone https://github.com/tanishq-sa/linktoqrwebsite.git
    cd linktoqrwebsite
    ```
 
@@ -139,6 +139,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
+- **Developed by Tanishq Saini**
 - [Next.js](https://nextjs.org/) for the amazing React framework
 - [TailwindCSS](https://tailwindcss.com/) for the utility-first CSS
 - [qrcode.react](https://github.com/zpao/qrcode.react) for QR code generation
