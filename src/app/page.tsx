@@ -1,26 +1,36 @@
 "use client";
 
-import { useState } from "react";
-import { QRCodeSVG } from "qrcode.react";
-import QRCode from "qrcode";
+import { useState, useRef } from "react";
+import CustomQRCode from "./components/CustomQRCode";
 
 export default function Home() {
-  const [qrValue, setQrValue] = useState("https://example.com/sample-file.pdf");
-  const [fileName, setFileName] = useState("Sample QR File");
+  const [qrValue, setQrValue] = useState("https://linktoqr.vercel.app");
+  const [fileName, setFileName] = useState("Link to QR");
   const [isDownloading, setIsDownloading] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string>("");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setLogoFile(file);
+      const url = URL.createObjectURL(file);
+      setLogoUrl(url);
+    }
+  };
 
   const downloadFile = async () => {
     setIsDownloading(true);
     try {
-      // Generate QR code as PNG data URL
-      const qrDataURL = await QRCode.toDataURL(qrValue, {
-        width: 512,
-        margin: 2,
-        color: {
-          dark: '#000000',
-          light: '#FFFFFF'
-        }
-      });
+      // Get the canvas element from the CustomQRCode component
+      const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+      if (!canvas) {
+        throw new Error('QR code canvas not found');
+      }
+
+      // Convert canvas to data URL
+      const qrDataURL = canvas.toDataURL('image/png');
       
       // Create a download link for the generated QR PNG
       const link = document.createElement("a");
@@ -38,25 +48,22 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      {/* Subtle Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-100 dark:bg-blue-900 rounded-full filter blur-3xl opacity-20"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-100 dark:bg-purple-900 rounded-full filter blur-3xl opacity-20"></div>
-      </div>
+    <div className="min-h-screen bg-white dark:bg-gray-900">
       
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* Header */}
         <header className="pt-16 pb-8 px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl mb-8 shadow-lg">
-              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
+            <div className="flex items-center justify-center gap-4 mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl shadow-lg">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </div>
+              <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white">
+                Link to QR
+              </h1>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-gray-900 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-6">
-              {fileName}
-            </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
               Generate and download QR codes instantly. Perfect for sharing files, links, and more.
             </p>
@@ -72,13 +79,15 @@ export default function Home() {
                   {/* QR Code Section */}
                   <div className="space-y-6">
                     <div className="text-center">
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">QR Code</h2>
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Custom QR Code</h2>
                       <div className="inline-block p-6 bg-white rounded-2xl shadow-lg border border-gray-200">
-                        <QRCodeSVG
+                        <CustomQRCode
                           value={qrValue}
                           size={280}
-                          level="M"
-                          includeMargin={true}
+                          logoUrl={logoUrl}
+                          logoSize={60}
+                          backgroundColor="#FFFFFF"
+                          foregroundColor="#000000"
                         />
                       </div>
                       <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
@@ -117,6 +126,32 @@ export default function Home() {
                           placeholder="https://example.com/your-file.pdf"
                         />
                       </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                          Logo (Optional)
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleLogoUpload}
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 dark:file:bg-blue-600 dark:file:text-white dark:hover:file:bg-blue-700"
+                          />
+                        </div>
+                        {logoUrl && (
+                          <div className="mt-2 flex items-center space-x-2">
+                            <img
+                              src={logoUrl}
+                              alt="Logo preview"
+                              className="w-8 h-8 rounded object-cover"
+                            />
+                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                              Logo will appear in QR code center
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Download Button */}
@@ -124,7 +159,7 @@ export default function Home() {
                       <button
                         onClick={downloadFile}
                         disabled={isDownloading}
-                        className="w-full inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold text-lg rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-500/50 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+                        className="w-full inline-flex items-center justify-center px-8 py-4 bg-blue-600 text-white font-semibold text-lg rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-500/50 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
                       >
                         {isDownloading ? (
                           <>
