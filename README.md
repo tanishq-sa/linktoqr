@@ -20,7 +20,7 @@ A modern, responsive Next.js application for generating and downloading QR codes
 
 - **Frontend:** Next.js 15.5.3
 - **Styling:** TailwindCSS 4.0
-- **QR Generation:** qrcode.react & qrcode
+- **QR Generation:** qrcode (with custom rounded modules)
 - **Language:** TypeScript
 - **Deployment:** Vercel
 
@@ -56,9 +56,9 @@ A modern, responsive Next.js application for generating and downloading QR codes
 ## 📱 Features in Detail
 
 ### QR Code Generation
-- Generates QR codes using the `qrcode.react` library
+- Generates QR codes using the `qrcode` library with custom rendering
 - Real-time updates as you type
-- High-quality SVG rendering
+- Custom rounded modules for modern appearance
 - Optimized for mobile scanning
 
 ### PNG Download
@@ -142,7 +142,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Developed by Tanishq Saini**
 - [Next.js](https://nextjs.org/) for the amazing React framework
 - [TailwindCSS](https://tailwindcss.com/) for the utility-first CSS
-- [qrcode.react](https://github.com/zpao/qrcode.react) for QR code generation
+- [qrcode](https://github.com/soldair/node-qrcode) for QR code generation
 - [Vercel](https://vercel.com/) for seamless deployment
 
 ## 📞 Support
