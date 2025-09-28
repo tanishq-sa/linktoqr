@@ -4,9 +4,11 @@ A modern, responsive Next.js application for generating and downloading QR codes
 
 ## ✨ Features
 
-- **🎨 Modern UI Design** - Clean, professional interface with gradient backgrounds
+- **🎨 Modern UI Design** - Clean, professional interface with Roboto Flex typography
 - **📱 Responsive Layout** - Works perfectly on desktop, tablet, and mobile devices
 - **⚡ Real-time QR Generation** - QR code updates instantly as you type
+- **🔵 Custom QR Styling** - Rounded modules with gaps for modern appearance
+- **🖼️ Logo Integration** - Add custom logos to QR code center
 - **📥 PNG Download** - Download high-quality QR codes as PNG files
 - **🎯 Customizable** - Edit file names and URLs dynamically
 - **🌙 Dark Mode Support** - Automatic dark/light theme switching
@@ -49,27 +51,35 @@ A modern, responsive Next.js application for generating and downloading QR codes
 
 1. **Enter a file name** in the "File Name" field
 2. **Add your download URL** in the "Download URL" field
-3. **View the QR code** that updates in real-time
-4. **Click "Download QR Code"** to save as PNG file
-5. **Scan the QR code** with any mobile device
+3. **Upload a logo** (optional) to appear in the QR code center
+4. **View the QR code** that updates in real-time with custom styling
+5. **Click "Download QR Code"** to save as PNG file
+6. **Scan the QR code** with any mobile device
 
 ## 📱 Features in Detail
 
 ### QR Code Generation
-- Generates QR codes using the `qrcode` library with custom rendering
+- Generates QR codes using the `qrcode` library with custom Canvas rendering
 - Real-time updates as you type
-- Custom rounded modules for modern appearance
+- Custom rounded modules with gaps for modern appearance
+- High error correction for logo support
 - Optimized for mobile scanning
+
+### Logo Integration
+- Upload any image to appear in QR code center
+- Circular logo with white background and border
+- Real-time preview of logo in QR code
+- Maintains QR code scannability
 
 ### PNG Download
 - Downloads actual PNG files (not just text)
-- High resolution (512x512 pixels)
+- High resolution (280x280 pixels)
 - Custom filename based on input
 - Proper error handling
 
 ### Modern UI
-- Clean, professional design
-- Gradient backgrounds and subtle animations
+- Clean, professional design with Roboto Flex typography
+- Solid colors and clean layouts
 - Responsive grid layout
 - Accessible form controls
 
@@ -106,7 +116,8 @@ No environment variables required for basic functionality.
 
 ### Customization
 - **Colors:** Modify TailwindCSS classes in `src/app/page.tsx`
-- **QR Settings:** Adjust QR code options in the `downloadFile` function
+- **QR Settings:** Adjust QR code options in `src/app/components/CustomQRCode.tsx`
+- **Font:** Change font in `src/app/globals.css` (update `--font-primary` variable)
 - **Styling:** Update `src/app/globals.css` for custom styles
 
 ## 📄 Project Structure
@@ -115,14 +126,18 @@ No environment variables required for basic functionality.
 linktoqrwebsite/
 ├── src/
 │   └── app/
-│       ├── globals.css      # Global styles
-│       ├── layout.tsx       # Root layout
-│       └── page.tsx         # Main page component
-├── public/                  # Static assets
-├── package.json            # Dependencies
-├── next.config.ts          # Next.js configuration
-├── tailwind.config.js      # TailwindCSS configuration
-└── README.md              # This file
+│       ├── components/
+│       │   └── CustomQRCode.tsx  # Custom QR code component
+│       ├── globals.css           # Global styles & fonts
+│       ├── layout.tsx            # Root layout with font loading
+│       └── page.tsx              # Main page component
+├── public/                       # Static assets
+├── package.json                  # Dependencies
+├── next.config.ts               # Next.js configuration
+├── tsconfig.json                # TypeScript configuration
+├── eslint.config.mjs            # ESLint configuration
+├── postcss.config.mjs           # PostCSS configuration
+└── README.md                    # This file
 ```
 
 ## 🤝 Contributing
