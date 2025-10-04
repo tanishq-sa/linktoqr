@@ -4,8 +4,8 @@ import { useState, useRef } from "react";
 import CustomQRCode from "./components/CustomQRCode";
 
 export default function Home() {
-  const [qrValue, setQrValue] = useState("https://linktoqr.vercel.app");
-  const [fileName, setFileName] = useState("Link to QR");
+  const [qrValue, setQrValue] = useState("https://linktoqr.dazzelr.tech");
+  const [fileName, setFileName] = useState("Unnamed");
   const [isDownloading, setIsDownloading] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string>("");
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -123,7 +123,7 @@ export default function Home() {
                           value={qrValue}
                           onChange={(e) => setQrValue(e.target.value)}
                           className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
-                          placeholder="https://example.com/your-file.pdf"
+                          placeholder="linktoqr.dazzelr.tech"
                         />
                       </div>
 
