@@ -71,7 +71,6 @@ export default function CustomQRCode({
 
         // Draw QR code modules as filled squares without gaps
         ctx.fillStyle = foregroundColor;
-        const gap = 0;
         
         for (let row = 0; row < moduleCount; row++) {
           for (let col = 0; col < moduleCount; col++) {
