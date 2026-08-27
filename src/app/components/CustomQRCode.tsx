@@ -69,35 +69,16 @@ export default function CustomQRCode({
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, size, size);
 
-        // Draw QR code modules as rounded squares with gaps
+        // Draw QR code modules as filled squares without gaps
         ctx.fillStyle = foregroundColor;
-        
-        // Add gap between modules
-        const gap = 1; // 1 pixel gap
+        const gap = 0;
         
         for (let row = 0; row < moduleCount; row++) {
           for (let col = 0; col < moduleCount; col++) {
             if (modules.get(row, col)) {
-              const x = (col + 1) * moduleSize + gap / 2;
-              const y = (row + 1) * moduleSize + gap / 2;
-              const moduleWidth = moduleSize - gap;
-              const moduleHeight = moduleSize - gap;
-              
-              // Draw rounded rectangle with high radius for circular appearance
-              const radius = Math.min(moduleWidth * 0.4, moduleHeight * 0.4);
-              
-              ctx.beginPath();
-              ctx.moveTo(x + radius, y);
-              ctx.lineTo(x + moduleWidth - radius, y);
-              ctx.quadraticCurveTo(x + moduleWidth, y, x + moduleWidth, y + radius);
-              ctx.lineTo(x + moduleWidth, y + moduleHeight - radius);
-              ctx.quadraticCurveTo(x + moduleWidth, y + moduleHeight, x + moduleWidth - radius, y + moduleHeight);
-              ctx.lineTo(x + radius, y + moduleHeight);
-              ctx.quadraticCurveTo(x, y + moduleHeight, x, y + moduleHeight - radius);
-              ctx.lineTo(x, y + radius);
-              ctx.quadraticCurveTo(x, y, x + radius, y);
-              ctx.closePath();
-              ctx.fill();
+              const x = (col + 1) * moduleSize;
+              const y = (row + 1) * moduleSize;
+              ctx.fillRect(x, y, moduleSize, moduleSize);
             }
           }
         }
