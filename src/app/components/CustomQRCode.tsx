@@ -47,9 +47,13 @@ export default function CustomQRCode({
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      // Set canvas size
-      canvas.width = size;
-      canvas.height = size;
+      // Set canvas size with scale factor for crisp rendering on high-DPI/Retina screens and downloads
+      const scale = 4;
+      canvas.width = size * scale;
+      canvas.height = size * scale;
+
+      // Scale the context so drawing operations can use the standard logical size
+      ctx.scale(scale, scale);
 
       try {
         // Generate QR code data
