@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from "react";
 import QRCode from "qrcode";
 
 interface CustomQRCodeProps {
@@ -13,17 +13,29 @@ interface CustomQRCodeProps {
   className?: string;
 }
 
-export default function CustomQRCode({
-  value,
-  size = 280,
-  logoUrl,
-  logoSize = 60,
-  backgroundColor = "#FFFFFF",
-  foregroundColor = "#000000",
-  className = "",
-}: CustomQRCodeProps) {
+export interface CustomQRCodeRef {
+  getCanvas: () => HTMLCanvasElement | null;
+}
+
+const CustomQRCode = forwardRef<CustomQRCodeRef, CustomQRCodeProps>(function CustomQRCode(
+  {
+    value,
+    size = 280,
+    logoUrl,
+    logoSize = 60,
+    backgroundColor = "#FFFFFF",
+    foregroundColor = "#000000",
+    className = "",
+  },
+  ref
+) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [logoImage, setLogoImage] = useState<HTMLImageElement | null>(null);
+
+  // Expose canvas to parent via ref
+  useImperativeHandle(ref, () => ({
+    getCanvas: () => canvasRef.current,
+  }));
 
   // Load logo image
   useEffect(() => {
@@ -47,8 +59,8 @@ export default function CustomQRCode({
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      // Set canvas size with scale factor for crisp rendering on high-DPI/Retina screens and downloads
-      const scale = 4;
+      // Use devicePixelRatio for crisp rendering, capped at 4 for performance
+      const scale = Math.min(window.devicePixelRatio || 2, 4);
       canvas.width = size * scale;
       canvas.height = size * scale;
 
@@ -128,4 +140,6 @@ export default function CustomQRCode({
       />
     </div>
   );
-}
+});
+
+export default CustomQRCode;

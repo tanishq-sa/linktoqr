@@ -1,49 +1,126 @@
 "use client";
 
-import { useState, useRef } from "react";
-import CustomQRCode from "./components/CustomQRCode";
+import { useState, useRef, useCallback } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import CustomQRCode, { CustomQRCodeRef } from "./components/CustomQRCode";
+import { ToastContainer, useToast } from "./components/Toast";
 
 export default function Home() {
   const [qrValue, setQrValue] = useState("https://linktoqr.dazzelr.tech");
   const [fileName, setFileName] = useState("Unnamed");
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isCopying, setIsCopying] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string>("");
-  const [logoFile, setLogoFile] = useState<File | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [fgColor, setFgColor] = useState("#000000");
+  const [bgColor, setBgColor] = useState("#FFFFFF");
+  const [urlError, setUrlError] = useState("");
+  const qrRef = useRef<CustomQRCodeRef>(null);
+  const { toasts, addToast, removeToast } = useToast();
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setLogoFile(file);
       const url = URL.createObjectURL(file);
       setLogoUrl(url);
     }
   };
 
+  const validateUrl = (url: string) => {
+    if (!url.trim()) {
+      setUrlError("URL is required");
+      return false;
+    }
+    try {
+      new URL(url);
+      setUrlError("");
+      return true;
+    } catch {
+      setUrlError("Please enter a valid URL (e.g. https://example.com)");
+      return false;
+    }
+  };
+
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    setQrValue(url);
+    if (urlError) validateUrl(url);
+  };
+
+  const handleUrlBlur = () => {
+    if (qrValue.trim()) validateUrl(qrValue);
+  };
+
+  const getCanvas = useCallback((): HTMLCanvasElement | null => {
+    return qrRef.current?.getCanvas() ?? null;
+  }, []);
+
   const downloadFile = async () => {
+    if (!validateUrl(qrValue)) return;
     setIsDownloading(true);
     try {
-      // Get the canvas element from the CustomQRCode component
-      const canvas = document.querySelector('canvas') as HTMLCanvasElement;
-      if (!canvas) {
-        throw new Error('QR code canvas not found');
-      }
+      const canvas = getCanvas();
+      if (!canvas) throw new Error("QR code canvas not found");
 
-      // Convert canvas to data URL
-      const qrDataURL = canvas.toDataURL('image/png');
-      
-      // Create a download link for the generated QR PNG
+      const qrDataURL = canvas.toDataURL("image/png");
       const link = document.createElement("a");
       link.href = qrDataURL;
-      link.download = `${fileName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_qr.png`;
+      link.download = `${fileName.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_qr.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      addToast("QR code downloaded successfully!", "success");
     } catch (error) {
-      console.error('Error generating QR code:', error);
-      alert('Error generating QR code. Please try again.');
+      console.error("Error generating QR code:", error);
+      addToast("Failed to download QR code. Please try again.", "error");
     } finally {
       setIsDownloading(false);
+    }
+  };
+
+  const downloadSVG = async () => {
+    if (!validateUrl(qrValue)) return;
+    try {
+      const encodedText = encodeURIComponent(qrValue);
+      const fgParam = fgColor.replace("#", "");
+      const bgParam = bgColor.replace("#", "");
+      const res = await fetch(`/api/qr?text=${encodedText}&format=svg&fg=${fgParam}&bg=${bgParam}`);
+      if (!res.ok) throw new Error("Failed to generate SVG");
+      const svgText = await res.text();
+      const blob = new Blob([svgText], { type: "image/svg+xml" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${fileName.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_qr.svg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      addToast("SVG downloaded successfully!", "success");
+    } catch (error) {
+      console.error("Error downloading SVG:", error);
+      addToast("Failed to download SVG. Please try again.", "error");
+    }
+  };
+
+  const copyToClipboard = async () => {
+    if (!validateUrl(qrValue)) return;
+    setIsCopying(true);
+    try {
+      const canvas = getCanvas();
+      if (!canvas) throw new Error("QR code canvas not found");
+
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Failed to create blob"))), "image/png");
+      });
+
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+      addToast("QR code copied to clipboard!", "success");
+    } catch (error) {
+      console.error("Error copying to clipboard:", error);
+      addToast("Failed to copy. Your browser may not support this.", "error");
+    } finally {
+      setIsCopying(false);
     }
   };
 
@@ -75,16 +152,42 @@ export default function Home() {
                   <div className="space-y-6">
                     <div className="text-center">
                       <h2 className="text-2xl font-semibold text-black dark:text-white mb-6 tracking-tight">Custom QR Code</h2>
-                      <div className="inline-block p-6 bg-white dark:bg-white rounded-3xl shadow-sm border border-gray-100">
+                      <div className="inline-block p-6 bg-white dark:bg-white rounded-3xl shadow-sm border border-gray-100 transition-transform duration-300 hover:scale-[1.02]">
                         <CustomQRCode
+                          ref={qrRef}
                           value={qrValue}
                           size={280}
                           logoUrl={logoUrl}
                           logoSize={60}
-                          backgroundColor="#FFFFFF"
-                          foregroundColor="#000000"
+                          backgroundColor={bgColor}
+                          foregroundColor={fgColor}
                         />
                       </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center justify-center gap-3">
+                      <button
+                        onClick={copyToClipboard}
+                        disabled={isCopying}
+                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-[#2C2C2E] text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-[#3A3A3C] active:scale-95 transition-all duration-200 disabled:opacity-50"
+                        title="Copy to clipboard"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        {isCopying ? "Copying..." : "Copy"}
+                      </button>
+                      <button
+                        onClick={downloadSVG}
+                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-[#2C2C2E] text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-[#3A3A3C] active:scale-95 transition-all duration-200"
+                        title="Download as SVG"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        SVG
+                      </button>
                     </div>
                   </div>
 
@@ -113,10 +216,59 @@ export default function Home() {
                         <input
                           type="url"
                           value={qrValue}
-                          onChange={(e) => setQrValue(e.target.value)}
-                          className="w-full px-4 py-3 bg-gray-100 dark:bg-[#2C2C2E] border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:bg-white dark:focus:bg-[#1C1C1E] transition-all duration-200 dark:text-white"
-                          placeholder="linktoqr.dazzelr.tech"
+                          onChange={handleUrlChange}
+                          onBlur={handleUrlBlur}
+                          className={`w-full px-4 py-3 bg-gray-100 dark:bg-[#2C2C2E] border rounded-xl focus:outline-none focus:ring-2 focus:bg-white dark:focus:bg-[#1C1C1E] transition-all duration-200 dark:text-white ${
+                            urlError
+                              ? "border-red-400 focus:ring-red-400"
+                              : "border-transparent focus:ring-[#007AFF]"
+                          }`}
+                          placeholder="https://example.com"
                         />
+                        {urlError && (
+                          <p className="mt-1.5 text-xs text-red-500 dark:text-red-400 flex items-center gap-1">
+                            <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {urlError}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Color Pickers */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                            QR Color
+                          </label>
+                          <div className="flex items-center gap-3 px-4 py-3 bg-gray-100 dark:bg-[#2C2C2E] rounded-xl">
+                            <input
+                              type="color"
+                              value={fgColor}
+                              onChange={(e) => setFgColor(e.target.value)}
+                              className="w-8 h-8 rounded-lg border-0 cursor-pointer bg-transparent [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-lg [&::-webkit-color-swatch]:border-2 [&::-webkit-color-swatch]:border-gray-200"
+                            />
+                            <span className="text-sm font-mono text-gray-600 dark:text-gray-400 uppercase">
+                              {fgColor}
+                            </span>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                            Background
+                          </label>
+                          <div className="flex items-center gap-3 px-4 py-3 bg-gray-100 dark:bg-[#2C2C2E] rounded-xl">
+                            <input
+                              type="color"
+                              value={bgColor}
+                              onChange={(e) => setBgColor(e.target.value)}
+                              className="w-8 h-8 rounded-lg border-0 cursor-pointer bg-transparent [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-lg [&::-webkit-color-swatch]:border-2 [&::-webkit-color-swatch]:border-gray-200"
+                            />
+                            <span className="text-sm font-mono text-gray-600 dark:text-gray-400 uppercase">
+                              {bgColor}
+                            </span>
+                          </div>
+                        </div>
                       </div>
 
                       <div>
@@ -133,14 +285,23 @@ export default function Home() {
                         </div>
                         {logoUrl && (
                           <div className="mt-2 flex items-center space-x-2">
-                            <img
+                            <Image
                               src={logoUrl}
                               alt="Logo preview"
-                              className="w-8 h-8 rounded object-cover"
+                              width={32}
+                              height={32}
+                              className="rounded object-cover"
+                              unoptimized
                             />
                             <span className="text-sm text-gray-500 dark:text-gray-400">
                               Logo will appear in QR code center
                             </span>
+                            <button
+                              onClick={() => setLogoUrl("")}
+                              className="ml-auto text-xs text-red-500 hover:text-red-600 transition-colors"
+                            >
+                              Remove
+                            </button>
                           </div>
                         )}
                       </div>
@@ -197,8 +358,77 @@ export default function Home() {
           </div>
         </main>
 
+        {/* FAQ Section */}
+        <section className="px-4 pb-16">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-3xl font-bold text-black dark:text-white tracking-tight text-center mb-10">
+              Frequently Asked Questions
+            </h2>
+            <div className="grid md:grid-cols-2 gap-4 max-w-5xl mx-auto">
+              {[
+                {
+                  q: "Is this tool free to use?",
+                  a: "Yes! Link to QR is completely free. Generate and download unlimited QR codes with no sign-up or watermarks.",
+                },
+                {
+                  q: "What formats can I download?",
+                  a: "You can download QR codes as PNG (raster) or SVG (vector). SVG is ideal for print materials since it scales to any size without losing quality.",
+                },
+                {
+                  q: "Can I add my logo to the QR code?",
+                  a: "Absolutely. Upload any image and it will be placed in the center of your QR code. We use high error correction (Level H) to ensure the code remains scannable.",
+                },
+                {
+                  q: "Will the QR code still scan with custom colors?",
+                  a: "Yes, as long as there's sufficient contrast between the foreground and background colors. Avoid light foreground colors on light backgrounds.",
+                },
+                {
+                  q: "Do you have an API?",
+                  a: "Yes! We offer a free REST API for programmatic QR code generation. Check out our API Documentation page for endpoints, parameters, and examples.",
+                  link: "/docs",
+                  linkText: "View API Docs →",
+                },
+                {
+                  q: "Is my data stored anywhere?",
+                  a: "No. All QR codes are generated on-the-fly. We don't store your URLs, images, or generated QR codes. Everything stays in your browser.",
+                },
+              ].map((faq, i) => (
+                <details
+                  key={i}
+                  className="group bg-white dark:bg-[#1C1C1E] rounded-2xl border border-black/5 dark:border-white/10 overflow-hidden transition-all duration-200 hover:shadow-sm"
+                >
+                  <summary className="flex items-center justify-between px-6 py-5 cursor-pointer list-none select-none">
+                    <span className="text-base font-semibold text-gray-900 dark:text-white pr-4">
+                      {faq.q}
+                    </span>
+                    <svg
+                      className="w-5 h-5 shrink-0 text-gray-400 transition-transform duration-200 group-open:rotate-45"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12m6-6H6" />
+                    </svg>
+                  </summary>
+                  <div className="px-6 pb-5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                    {faq.a}
+                    {faq.link && (
+                      <Link
+                        href={faq.link}
+                        className="block mt-2 text-[#007AFF] dark:text-[#0A84FF] font-medium hover:underline"
+                      >
+                        {faq.linkText}
+                      </Link>
+                    )}
+                  </div>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* Footer */}
-        <footer className="mt-8 border-t border-black/5 dark:border-white/10 pt-8 pb-12 px-4">
+        <footer className="border-t border-black/5 dark:border-white/10 pt-8 pb-12 px-4">
           <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex flex-col items-center md:items-start gap-1">
               <p className="font-semibold text-gray-900 dark:text-gray-100 tracking-tight">
@@ -209,7 +439,16 @@ export default function Home() {
               </p>
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 flex-wrap justify-center">
+              <Link 
+                href="/docs"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white dark:bg-[#1C1C1E] border border-black/5 dark:border-white/10 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-95 transition-all duration-200 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-[#007AFF] dark:hover:text-[#0A84FF]"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                </svg>
+                API Docs
+              </Link>
               <a 
                 href="https://tanishqsa.dev" 
                 target="_blank" 
@@ -234,6 +473,8 @@ export default function Home() {
           </div>
         </footer>
       </div>
+
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );
 }

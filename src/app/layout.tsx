@@ -9,8 +9,27 @@ const robotoFlex = Roboto_Flex({
 });
 
 export const metadata: Metadata = {
-  title: "QR Download Page",
-  description: "Download files via QR code or direct download button",
+  title: "Link to QR — Generate Custom QR Codes Instantly",
+  description:
+    "Create custom QR codes with your own colors and logo. Download as PNG or SVG. Free, fast, and no sign-up required.",
+  openGraph: {
+    title: "Link to QR — Generate Custom QR Codes Instantly",
+    description:
+      "Create custom QR codes with your own colors and logo. Download as PNG or SVG. Free, fast, and no sign-up required.",
+    url: "https://linktoqr.dazzelr.tech",
+    siteName: "Link to QR",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Link to QR — Generate Custom QR Codes Instantly",
+    description:
+      "Create custom QR codes with your own colors and logo. Download as PNG or SVG.",
+  },
+  metadataBase: new URL("https://linktoqr.dazzelr.tech"),
+  keywords: ["QR code", "QR generator", "custom QR code", "QR code with logo", "free QR code"],
+  robots: "index, follow",
 };
 
 export default function RootLayout({
@@ -20,11 +39,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100..1000&family=Turret+Road:wght@200;300;400;500;700;800&display=swap" rel="stylesheet" />
-      </head>
       <body
         className={`${robotoFlex.variable} antialiased`}
       >
