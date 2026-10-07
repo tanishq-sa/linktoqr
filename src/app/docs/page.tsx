@@ -48,7 +48,7 @@ export default function DocsPage() {
             <section className="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-black/5 dark:border-white/10 p-6 md:p-8">
               <h2 className="text-lg font-semibold text-black dark:text-white mb-3">Base URL</h2>
               <code className="block px-4 py-3 bg-gray-100 dark:bg-[#2C2C2E] rounded-xl text-sm font-mono text-gray-800 dark:text-gray-200">
-                https://linktoqr.dazzelr.tech/api/qr
+                https://linktoqr.tanishqsa.dev/api/qr
               </code>
             </section>
 
@@ -129,13 +129,13 @@ export default function DocsPage() {
                 <div className="bg-gray-900 dark:bg-[#0D0D0D] rounded-xl p-4 overflow-x-auto">
                   <pre className="text-sm font-mono text-gray-200 whitespace-pre-wrap break-all">
 {`# Basic PNG
-curl "https://linktoqr.dazzelr.tech/api/qr?text=https://example.com" -o qr.png
+curl "https://linktoqr.tanishqsa.dev/api/qr?text=https://example.com" -o qr.png
 
 # Custom colors + SVG
-curl "https://linktoqr.dazzelr.tech/api/qr?text=hello&fg=1A1A2E&bg=E8E8E8&format=svg" -o qr.svg
+curl "https://linktoqr.tanishqsa.dev/api/qr?text=hello&fg=1A1A2E&bg=E8E8E8&format=svg" -o qr.svg
 
 # Large size with low error correction
-curl "https://linktoqr.dazzelr.tech/api/qr?text=https://google.com&size=1000&ecl=L" -o qr.png`}
+curl "https://linktoqr.tanishqsa.dev/api/qr?text=https://google.com&size=1000&ecl=L" -o qr.png`}
                   </pre>
                 </div>
               </div>
@@ -174,7 +174,7 @@ curl "https://linktoqr.dazzelr.tech/api/qr?text=https://google.com&size=1000&ecl
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mt-8 mb-4">Example</h3>
                 <div className="bg-gray-900 dark:bg-[#0D0D0D] rounded-xl p-4 overflow-x-auto">
                   <pre className="text-sm font-mono text-gray-200 whitespace-pre-wrap break-all">
-{`curl -X POST https://linktoqr.dazzelr.tech/api/qr \\
+{`curl -X POST https://linktoqr.tanishqsa.dev/api/qr \\
   -H "Content-Type: application/json" \\
   -d '{
     "text": "https://example.com",
@@ -280,7 +280,7 @@ curl "https://linktoqr.dazzelr.tech/api/qr?text=https://google.com&size=1000&ecl
                     <pre className="text-sm font-mono text-gray-200">
 {`// Download as PNG
 const response = await fetch(
-  "https://linktoqr.dazzelr.tech/api/qr?text=https://example.com&size=600"
+  "https://linktoqr.tanishqsa.dev/api/qr?text=https://example.com&size=600"
 );
 const blob = await response.blob();
 const url = URL.createObjectURL(blob);
@@ -301,7 +301,7 @@ document.getElementById("qr-img").src = url;`}
 {`import requests
 
 response = requests.post(
-    "https://linktoqr.dazzelr.tech/api/qr",
+    "https://linktoqr.tanishqsa.dev/api/qr",
     json={
         "text": "https://example.com",
         "size": 800,
@@ -325,7 +325,7 @@ with open("qr.png", "wb") as f:
                     <pre className="text-sm font-mono text-gray-200">
 {`<!-- Embed QR code directly in HTML -->
 <img
-  src="https://linktoqr.dazzelr.tech/api/qr?text=https://example.com&size=200"
+  src="https://linktoqr.tanishqsa.dev/api/qr?text=https://example.com&size=200"
   alt="QR Code"
   width="200"
   height="200"
